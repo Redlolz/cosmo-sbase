@@ -13,12 +13,13 @@
 static int aflag;
 static int cflag;
 static int mflag;
-static struct timespec times[2] = {{.tv_nsec = UTIME_NOW}};
+struct timespec times[2];
 
 static void
-touch(const char *file)
+touch_internal(const char *file)
 {
 	int fd, ret;
+	times[0].tv_nsec = UTIME_NOW;
 
 	if (utimensat(AT_FDCWD, file, times, 0) == 0)
 		return;
@@ -153,7 +154,7 @@ main(int argc, char *argv[])
 		times[1].tv_nsec = UTIME_OMIT;
 
 	for (; *argv; argc--, argv++)
-		touch(*argv);
+		touch_internal(*argv);
 
 	return 0;
 }

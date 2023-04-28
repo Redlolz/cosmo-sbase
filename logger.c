@@ -9,6 +9,11 @@
 
 #include "util.h"
 
+typedef struct {
+	char *c_name;
+	int c_val;
+} CODE;
+
 static int
 decodetable(CODE *table, char *name)
 {

@@ -4,8 +4,9 @@ VERSION = 0.0
 # paths
 PREFIX = /usr/local
 MANPREFIX = $(PREFIX)/share/man
+COSMO = /opt/cosmo
 
-CC = cc
+CC = $(COSMO)/tool/scripts/cosmocc
 AR = ar
 RANLIB = ranlib
 

@@ -10,24 +10,17 @@
 
 #include "util.h"
 
-struct {
+struct sig_struct {
 	const char *name;
 	const int   sig;
-} sigs[] = {
-	{ "0", 0 },
-#define SIG(n) { #n, SIG##n }
-	SIG(ABRT), SIG(ALRM), SIG(BUS),  SIG(CHLD), SIG(CONT), SIG(FPE),  SIG(HUP),
-	SIG(ILL),  SIG(INT),  SIG(KILL), SIG(PIPE), SIG(QUIT), SIG(SEGV), SIG(STOP),
-	SIG(TERM), SIG(TSTP), SIG(TTIN), SIG(TTOU), SIG(USR1), SIG(USR2), SIG(URG),
-#undef SIG
 };
 
 const char *
-sig2name(const int sig)
+sig2name(struct sig_struct *sigs, unsigned int sigs_size, const int sig)
 {
 	size_t i;
 
-	for (i = 0; i < LEN(sigs); i++)
+	for (i = 0; i < sigs_size; i++)
 		if (sigs[i].sig == sig)
 			return sigs[i].name;
 	eprintf("%d: bad signal number\n", sig);
@@ -36,11 +29,11 @@ sig2name(const int sig)
 }
 
 int
-name2sig(const char *name)
+name2sig(struct sig_struct *sigs, unsigned int sigs_size, const char *name)
 {
 	size_t i;
 
-	for (i = 0; i < LEN(sigs); i++)
+	for (i = 0; i < sigs_size; i++)
 		if (!strcasecmp(sigs[i].name, name))
 			return sigs[i].sig;
 	eprintf("%s: bad signal name\n", name);
@@ -61,6 +54,31 @@ main(int argc, char *argv[])
 	pid_t pid;
 	size_t i;
 	int ret = 0, sig = SIGTERM;
+	struct sig_struct sigs[] = {
+		{ "0", 0 },
+		{"ABRT", SIGABRT},
+		{"ALRM", SIGALRM},
+		{"BUS" , SIGBUS },
+		{"CHLD", SIGCHLD},
+		{"CONT", SIGCONT},
+		{"FPE" , SIGFPE },
+		{"HUP" , SIGHUP },
+		{"ILL" , SIGILL },
+		{"INT" , SIGINT },
+		{"KILL", SIGKILL},
+		{"PIPE", SIGPIPE},
+		{"QUIT", SIGQUIT},
+		{"SEGV", SIGSEGV},
+		{"STOP", SIGSTOP},
+		{"TERM", SIGTERM},
+		{"TSTP", SIGTSTP},
+		{"TTIN", SIGTTIN},
+		{"TTOU", SIGTTOU},
+		{"USR1", SIGUSR1},
+		{"USR2", SIGUSR2},
+		{"URG" , SIGURG },
+	};
+	unsigned int sigs_size = LEN(sigs);
 
 	argv0 = *argv, argv0 ? (argc--, argv++) : (void *)0;
 
@@ -80,7 +98,7 @@ main(int argc, char *argv[])
 				sig = estrtonum(*argv, 0, INT_MAX);
 				if (sig > 128)
 					sig = WTERMSIG(sig);
-				puts(sig2name(sig));
+				puts(sig2name(sigs, sigs_size, sig));
 			} else {
 				usage();
 			}
@@ -91,7 +109,7 @@ main(int argc, char *argv[])
 			argc--, argv++;
 			if (!argc)
 				usage();
-			sig = name2sig(*argv);
+			sig = name2sig(sigs, sigs_size, *argv);
 			argc--, argv++;
 			break;
 		case '-':
@@ -104,9 +122,9 @@ main(int argc, char *argv[])
 			/* XSI-extensions -argnum and -argname*/
 			if (isdigit((*argv)[1])) {
 				sig = estrtonum((*argv) + 1, 0, INT_MAX);
-				sig2name(sig);
+				sig2name(sigs, sigs_size, sig);
 			} else {
-				sig = name2sig((*argv) + 1);
+				sig = name2sig(sigs, sigs_size, (*argv) + 1);
 			}
 			argc--, argv++;
 		}

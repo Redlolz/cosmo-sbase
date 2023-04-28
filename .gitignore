@@ -1,3 +1,4 @@
+*.com
 *.o
 /getconf.h
 /libutf.a

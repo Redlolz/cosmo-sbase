@@ -84,6 +84,10 @@ LIBUTILSRC =\
 
 LIB = $(LIBUTF) $(LIBUTIL)
 
+# Not included:
+# 	date - date.c:60: undefined reference to `clock_settime'
+#	hostname
+#	logger
 BIN =\
 	basename\
 	cal\
@@ -99,7 +103,6 @@ BIN =\
 	cp\
 	cron\
 	cut\
-	date\
 	dd\
 	dirname\
 	du\
@@ -115,12 +118,10 @@ BIN =\
 	getconf\
 	grep\
 	head\
-	hostname\
 	join\
 	kill\
 	link\
 	ln\
-	logger\
 	logname\
 	ls\
 	md5sum\
@@ -186,10 +187,14 @@ BIN =\
 LIBUTFOBJ = $(LIBUTFSRC:.c=.o)
 LIBUTILOBJ = $(LIBUTILSRC:.c=.o)
 OBJ = $(BIN:=.o) $(LIBUTFOBJ) $(LIBUTILOBJ)
+COM = $(BIN:=.com)
 SRC = $(BIN:=.c)
 MAN = $(BIN:=.1)
 
-all: $(BIN)
+all: $(COM)
+
+$(COM): $(BIN)
+	objcopy -S -O binary $(basename $@) $@
 
 $(BIN): $(LIB) $(@:=.o)
 
@@ -255,6 +260,7 @@ sbase-box: $(LIB) $(SRC) getconf.h
 	for f in $(SRC); do echo "fputs(\"$${f%.c} \", stdout);"; done                                                                >> build/$@.c
 	echo 'putchar(0xa); }; return 0; }'                                                                                           >> build/$@.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o $@ build/*.c $(LIB)
+	objcopy -S -O binary $@ $@.com
 	rm -r build
 
 sbase-box-install: sbase-box
@@ -273,7 +279,7 @@ sbase-box-uninstall: uninstall
 	cd $(DESTDIR)$(PREFIX)/bin && rm -f sbase-box
 
 clean:
-	rm -f $(BIN) $(OBJ) $(LIB) sbase-box sbase-$(VERSION).tar.gz
+	rm -f $(BIN) $(OBJ) $(COM) $(LIB) sbase-box sbase-box.com sbase-$(VERSION).tar.gz
 	rm -f getconf.h
 
 .gitignore:

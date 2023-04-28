@@ -464,17 +464,12 @@ reloadentries(void)
 static void
 sighandler(int sig)
 {
-	switch (sig) {
-	case SIGCHLD:
+	if (sig == SIGCHLD)
 		chldreap = 1;
-		break;
-	case SIGHUP:
+	else if (sig == SIGHUP)
 		reload = 1;
-		break;
-	case SIGTERM:
+	else if (sig == SIGTERM)
 		quit = 1;
-		break;
-	}
 }
 
 static void
